@@ -15,7 +15,7 @@ class Launcher {
     std::string unavailable_="MK64 integration is not included in this diagnostic build.";
 public:
     Settings settings;
-    std::string message="Import your Mario 64 ROM, or start with the built-in XR tests.";
+    std::string message="Choose Import ZIP or ROM file. Your game file stays on this headset.";
     std::string inputStatus, diagnostics;
     Page CurrentPage() const {return page_;}
     void Open(Page page);

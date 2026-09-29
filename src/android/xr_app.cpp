@@ -153,7 +153,7 @@ void XrApp::Execute(UiCommand command){
     }
 }
 std::string XrApp::Report()const {
-    std::ostringstream s;s<<"Aether64 0.1.0 diagnostic\nRuntime: "<<runtimeName_<<"\nGPU: "<<gpuName_<<"\nEye size: "<<swapchains_[0].width<<" x "<<swapchains_[0].height<<"\nSubmitted: "<<submitted_<<"  Omitted: "<<omitted_<<"\nCPU work last frame: "<<std::fixed<<std::setprecision(2)<<lastCpuMs_<<" ms\nGPU time / compositor missed frames: not measured\n72 Hz requested when supported; fresh-frame target is unverified.\nLast error: "<<lastError_;return s.str();
+    std::ostringstream s;s<<"Aether64 V1\nRuntime: "<<runtimeName_<<"\nGPU: "<<gpuName_<<"\nEye size: "<<swapchains_[0].width<<" x "<<swapchains_[0].height<<"\nSubmitted: "<<submitted_<<"  Omitted: "<<omitted_<<"\nCPU work last frame: "<<std::fixed<<std::setprecision(2)<<lastCpuMs_<<" ms\nGPU time / compositor missed frames: not measured\n72 Hz requested when supported; fresh-frame target is unverified.\nLast error: "<<lastError_;return s.str();
 }
 void XrApp::UpdatePanel(Time time){
     if(time-lastPanelTime_<250000000&&!panelSignature_.empty())return;

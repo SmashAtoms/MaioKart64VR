@@ -1,45 +1,72 @@
 package org.aether64.xr;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.*;
 
-/** Validates the archive container without extracting paths onto the filesystem. */
+/** Installs either a raw N64 ROM or the single ROM contained in a ZIP. */
 public final class ArchiveValidator {
     public static final long MAX_ARCHIVE_BYTES=1024L*1024*1024;
-    private static final long MAX_EXPANDED_BYTES=2L*1024*1024*1024;
+    private static final long MIN_ROM_BYTES=4L*1024*1024;
     private ArchiveValidator() {}
-    public static void validate(File archive)throws IOException {
-        if(archive.length()<22||archive.length()>MAX_ARCHIVE_BYTES)throw new IOException("Invalid archive size");
-        try(RandomAccessFile raw=new RandomAccessFile(archive,"r")) {
-            byte[] magic=new byte[4];
-            if(raw.read(magic)==4 && isRomMagic(magic)) {
-                if(archive.length()<4L*1024*1024)throw new IOException("ROM is too small to be a Mario 64 image");
-                return;
-            }
+
+    public static void installRom(File source,File destination)throws IOException {
+        if(source.length()<4||source.length()>MAX_ARCHIVE_BYTES)throw new IOException("Invalid file size");
+        if(isRawRom(source)) {
+            validateRawRom(source);
+            Files.move(source.toPath(),destination.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
+            return;
         }
-        boolean hasVersion=false,hasGameResources=false,hasMario64Rom=false;long total=0;int count=0;
-        Set<String> names=new HashSet<>();
-        try(ZipFile zip=new ZipFile(archive)) {
+
+        File extracted=File.createTempFile("rom-",".partial",destination.getParentFile());
+        try(ZipFile zip=new ZipFile(source)) {
+            ZipEntry rom=null;
             Enumeration<? extends ZipEntry> entries=zip.entries();
-            byte[] buffer=new byte[65536];
+            Set<String> names=new HashSet<>();
             while(entries.hasMoreElements()) {
-                ZipEntry entry=entries.nextElement();String name=entry.getName();
-                if(++count>100000)throw new IOException("Too many archive entries");
-                if(name.startsWith("/")||name.contains("\\")||name.contains(":")||Arrays.asList(name.split("/")).contains("..")||!names.add(name))throw new IOException("Invalid or duplicate archive path");
+                ZipEntry entry=entries.nextElement();
+                String name=entry.getName();
+                if(name.startsWith("/")||name.contains("\\")||name.contains(":")||Arrays.asList(name.split("/")).contains("..")||!names.add(name))throw new IOException("Invalid or duplicate ZIP path");
                 if(entry.isDirectory())continue;
-                if(entry.getSize()<0||entry.getSize()>MAX_EXPANDED_BYTES)throw new IOException("Invalid entry size");
-                CRC32 crc=new CRC32();long read=0;
-                try(InputStream input=zip.getInputStream(entry)) {int n;while((n=input.read(buffer))!=-1){read+=n;total+=n;if(total>MAX_EXPANDED_BYTES)throw new IOException("Archive expansion limit exceeded");crc.update(buffer,0,n);}}
-                if(read!=entry.getSize()||crc.getValue()!=entry.getCrc())throw new IOException("Archive checksum mismatch");
-                if(name.equals("version"))hasVersion=true;
-                if(name.startsWith("textures/")||name.startsWith("courses/")||name.startsWith("objects/"))hasGameResources=true;
                 String lower=name.toLowerCase(Locale.ROOT);
-                if(lower.endsWith(".z64")||lower.endsWith(".n64")||lower.endsWith(".v64"))hasMario64Rom=true;
+                if(lower.endsWith(".z64")||lower.endsWith(".n64")||lower.endsWith(".v64")) {
+                    if(rom!=null)throw new IOException("ZIP contains more than one ROM; keep only one .z64, .n64, or .v64 file");
+                    rom=entry;
+                }
             }
+            if(rom==null)throw new IOException("ZIP does not contain a .z64, .n64, or .v64 ROM");
+            if(rom.getSize()<MIN_ROM_BYTES||rom.getSize()>MAX_ARCHIVE_BYTES)throw new IOException("ROM has an invalid size");
+            CRC32 crc=new CRC32();long total=0;byte[] buffer=new byte[65536];
+            try(InputStream input=zip.getInputStream(rom);FileOutputStream output=new FileOutputStream(extracted)) {
+                int n;
+                while((n=input.read(buffer))!=-1) {
+                    total+=n;
+                    if(total>MAX_ARCHIVE_BYTES)throw new IOException("ROM exceeds the supported 1 GiB limit");
+                    output.write(buffer,0,n);crc.update(buffer,0,n);
+                }
+                output.getFD().sync();
+            }
+            if(total!=rom.getSize()||crc.getValue()!=rom.getCrc())throw new IOException("ROM ZIP checksum mismatch");
+            validateRawRom(extracted);
+            Files.move(extracted.toPath(),destination.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            if(extracted.exists())extracted.delete();
         }
-        if(!((hasVersion&&hasGameResources)||hasMario64Rom))throw new IOException("ZIP must contain an MK64 O2R layout or a .z64, .n64, or .v64 Mario 64 ROM");
     }
+
+    private static void validateRawRom(File file)throws IOException {
+        if(file.length()<MIN_ROM_BYTES||file.length()>MAX_ARCHIVE_BYTES)throw new IOException("ROM has an invalid size");
+        if(!isRawRom(file))throw new IOException("ROM header is not a supported N64 byte order");
+    }
+
+    private static boolean isRawRom(File file)throws IOException {
+        try(RandomAccessFile raw=new RandomAccessFile(file,"r")) {
+            byte[] magic=new byte[4];
+            return raw.read(magic)==4&&isRomMagic(magic);
+        }
+    }
+
     private static boolean isRomMagic(byte[] magic) {
         return (magic[0]&255)==0x80&&(magic[1]&255)==0x37&&(magic[2]&255)==0x12&&(magic[3]&255)==0x40
             ||(magic[0]&255)==0x40&&(magic[1]&255)==0x12&&(magic[2]&255)==0x37&&(magic[3]&255)==0x80

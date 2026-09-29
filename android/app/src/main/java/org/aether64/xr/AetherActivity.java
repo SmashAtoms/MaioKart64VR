@@ -43,7 +43,7 @@ public final class AetherActivity extends NativeActivity {
         super.onActivityResult(request,result,data);
         if(request!=IMPORT_ARCHIVE) return;
         if(result!=RESULT_OK||data==null||data.getData()==null) { importResult="Import cancelled. Existing data was kept.";return; }
-        Uri uri=data.getData();importing=true;importResult="Importing and checking archive...";
+        Uri uri=data.getData();importing=true;importResult="Importing ROM or ZIP...";
         io.execute(() -> {
             File dir=new File(getFilesDir(),"games/mk64");
             File temporary=null;
@@ -61,9 +61,10 @@ public final class AetherActivity extends NativeActivity {
                     }
                     out.getFD().sync();
                 }
-                ArchiveValidator.validate(temporary);
-                Files.move(temporary.toPath(),new File(dir,"mk64.rom").toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
-                importResult="Mario 64 ROM imported. The original document was not changed. A compatible game renderer is still required to launch it.";
+                ArchiveValidator.installRom(temporary,new File(dir,"mk64.rom"));
+                if(temporary.exists())temporary.delete();
+                temporary=null;
+                importResult="Mario Kart 64 ROM imported. The original document was not changed.";
             }catch(Exception e){importResult="Import failed: "+e.getMessage()+". Existing data was kept.";}
             finally {if(temporary!=null&&temporary.exists())temporary.delete();importing=false;}
         });
@@ -71,7 +72,7 @@ public final class AetherActivity extends NativeActivity {
     public synchronized String pollImportResult() { String r=importResult;importResult="";return r; }
     public String gameArchive() {return new File(getFilesDir(),"games/mk64/mk64.rom").getAbsolutePath();}
     public boolean hasGameData() {
-        return new File(gameArchive()).isFile()||new File(getFilesDir(),"games/mk64/mk64.o2r").isFile();
+        return new File(gameArchive()).isFile();
     }
     public String dataDirectory() {return getFilesDir().getAbsolutePath();}
     public int loadCamera() {return getPreferences(MODE_PRIVATE).getInt("camera",0)==1?1:0;}

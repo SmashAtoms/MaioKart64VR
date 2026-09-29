@@ -1,33 +1,28 @@
-# Aether64
+# Aether64 V1
 
-Aether64 is an OpenXR Android diagnostic/demo application targeting Meta Quest 2, Quest Pro, and Quest 3.
+Aether64 V1 is an arm64 OpenXR Android application for Meta Quest 2, Quest Pro, and Quest 3.
 
-## Quest 2 demo
+## Install
 
-The Android project builds an arm64 APK for Quest devices. The debug APK can be installed with:
-
-Download the current debug APK directly: [Aether64-Quest2-debug.apk](./Aether64-Quest2-debug.apk)
-
-### Install on Quest 2
-
-Do not open the APK from the Quest Browser. Download it to a computer and install it with SideQuest, or with Android platform-tools after enabling Developer Mode:
+Download the single `Aether64-V1.apk` file and install it with SideQuest or Android platform-tools:
 
 ```powershell
-adb install -r Aether64-Quest2-debug.apk
+adb install -r Aether64-V1.apk
 ```
 
-The APK is an arm64 OpenXR Android application. It is not a Windows executable and it is not intended to be launched by tapping the raw download in the browser.
+Do not try to open an APK directly in Quest Browser.
 
-```powershell
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-```
+## Import game data
 
-Build from the repository root with:
+In the headset, open **Games → Import ZIP or ROM file**. Select either:
 
-```powershell
-gradle -p android :app:assembleDebug
-```
+- a ZIP containing exactly one `.z64`, `.n64`, or `.v64` ROM; or
+- an already-unzipped `.z64`, `.n64`, or `.v64` ROM.
 
-The GitHub Actions workflow rebuilds the arm64 APK after each push and publishes it as a workflow artifact. The importer accepts a native O2R layout, a ZIP containing a `.z64`, `.n64`, or `.v64` ROM, or an already-unzipped raw ROM file. Importing a ROM does not itself provide the Mario Kart 64 renderer; that adapter still needs to be implemented and linked.
+For ZIP input, V1 extracts and validates the ROM before storing it in the app's private directory. The original selected file is not modified.
 
-The release build expects signing credentials through the `AETHER_KEYSTORE`, `AETHER_STORE_PASSWORD`, `AETHER_KEY_ALIAS`, and `AETHER_KEY_PASSWORD` environment variables. No signing credentials belong in the repository.
+## Current gameplay status
+
+V1 contains the Quest OpenXR shell, stereo renderer, controller input, ROM importer, and diagnostic scene. It does **not** yet contain an N64 emulator or a linked Mario Kart 64 native engine, so importing a ROM does not currently make the game playable.
+
+The repository's GitHub Actions workflow builds the APK. The Android launcher is Java; the OpenXR renderer and runtime are native C++.
