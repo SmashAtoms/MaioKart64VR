@@ -8,6 +8,16 @@ The Android project builds an arm64 APK for Quest devices. The debug APK can be 
 
 Download the current debug APK directly: [Aether64-Quest2-debug.apk](./Aether64-Quest2-debug.apk)
 
+### Install on Quest 2
+
+Do not open the APK from the Quest Browser. Download it to a computer and install it with SideQuest, or with Android platform-tools after enabling Developer Mode:
+
+```powershell
+adb install -r Aether64-Quest2-debug.apk
+```
+
+The APK is an arm64 OpenXR Android application. It is not a Windows executable and it is not intended to be launched by tapping the raw download in the browser.
+
 ```powershell
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ```
