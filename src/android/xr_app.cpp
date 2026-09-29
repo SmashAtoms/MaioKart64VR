@@ -53,7 +53,7 @@ void XrApp::Initialize(){
     host_=std::make_unique<HostServices>(HostServices{graphics_,Log,JavaString("dataDirectory")});
     auto cameraMethod=env_->GetMethodID(activityClass_,"loadCamera","()I");launcher_.settings.camera=env_->CallIntMethod(app_->activity->clazz,cameraMethod)==1?CameraMode::Chase:CameraMode::Driver;
     launcher_.settings.diagnostics=env_->CallBooleanMethod(app_->activity->clazz,env_->GetMethodID(activityClass_,"loadDiagnostics","()Z"));
-    launcher_.SetGameState(env_->CallBooleanMethod(app_->activity->clazz,env_->GetMethodID(activityClass_,"hasGameData","()Z")),false,"The MK64 renderer adapter is not linked in this diagnostic build. Import and XR tests are available.");
+    launcher_.SetGameState(env_->CallBooleanMethod(app_->activity->clazz,env_->GetMethodID(activityClass_,"hasGameData","()Z")),false,"Game archive detected. The Mario Kart 64 renderer adapter is not included in this diagnostic build.");
     if(refresh){
         PFN_xrEnumerateDisplayRefreshRatesFB enumerate=nullptr;PFN_xrRequestDisplayRefreshRateFB request=nullptr;
         Check(xrGetInstanceProcAddr(instance_,"xrEnumerateDisplayRefreshRatesFB",reinterpret_cast<PFN_xrVoidFunction*>(&enumerate)),"Enumerate refresh function");
@@ -188,7 +188,7 @@ void XrApp::Frame(){
             if((head.locationFlags&headValid)==headValid){neutral_=NeutralHeading(Convert(head.pose));neutralSet_=true;recenterRequested_=false;}
         }
         HandleUi(sample);
-        auto importMessage=JavaString("pollImportResult");if(!importMessage.empty()){launcher_.message=importMessage;launcher_.SetGameState(env_->CallBooleanMethod(app_->activity->clazz,env_->GetMethodID(activityClass_,"hasGameData","()Z")),false,"The MK64 renderer adapter is not linked in this diagnostic build. Import and XR tests are available.");panelSignature_.clear();}
+        auto importMessage=JavaString("pollImportResult");if(!importMessage.empty()){launcher_.message=importMessage;launcher_.SetGameState(env_->CallBooleanMethod(app_->activity->clazz,env_->GetMethodID(activityClass_,"hasGameData","()Z")),false,"Game archive detected. The Mario Kart 64 renderer adapter is not included in this diagnostic build.");panelSignature_.clear();}
         std::ostringstream inputText;inputText<<"Touch: "<<(sample.active?"active":"inactive")<<"\nSteering: "<<std::fixed<<std::setprecision(2)<<sample.steering<<"  Y: "<<sample.vertical<<"\nA accelerate: "<<bool(sample.held&Accelerate)<<"  B brake: "<<bool(sample.held&Brake)<<"\nRight trigger hop: "<<bool(sample.held&Hop)<<"  Left trigger item: "<<bool(sample.held&Item);launcher_.inputStatus=inputText.str();
         FrameContext context;context.frame=++frame_;context.predictedDisplayTime=state.predictedDisplayTime;context.camera=launcher_.settings.camera;
         if(lifecycle_.paused||!adapter_){scheduler_.Rebase(state.predictedDisplayTime);input_.Clear();}

@@ -63,7 +63,7 @@ public final class AetherActivity extends NativeActivity {
                 }
                 ArchiveValidator.validate(temporary);
                 Files.move(temporary.toPath(),new File(dir,"mk64.o2r").toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
-                importResult="MK64 archive imported. The original document was not changed.";
+                importResult="MK64 archive imported. The original document was not changed. A compatible game renderer is still required to launch it.";
             }catch(Exception e){importResult="Import failed: "+e.getMessage()+". Existing data was kept.";}
             finally {if(temporary!=null&&temporary.exists())temporary.delete();importing=false;}
         });

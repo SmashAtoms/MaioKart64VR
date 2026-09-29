@@ -25,7 +25,9 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 Build from the repository root with:
 
 ```powershell
-gradlew.bat -p android :app:assembleDebug
+gradle -p android :app:assembleDebug
 ```
+
+The GitHub Actions workflow rebuilds the arm64 APK after each push and publishes it as a workflow artifact. The importer accepts either the native O2R layout or a ZIP containing a `.z64`, `.n64`, or `.v64` ROM file. Importing a ROM does not itself provide the Mario Kart 64 renderer; that adapter still needs to be implemented and linked.
 
 The release build expects signing credentials through the `AETHER_KEYSTORE`, `AETHER_STORE_PASSWORD`, `AETHER_KEY_ALIAS`, and `AETHER_KEY_PASSWORD` environment variables. No signing credentials belong in the repository.
