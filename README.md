@@ -7,10 +7,11 @@ Aether64 V1 is an arm64 OpenXR Android application for Meta Quest 2, Quest Pro, 
 Download the single `Aether64-V1.apk` file and install it with SideQuest or Android platform-tools:
 
 ```powershell
+adb uninstall org.aether64.xr
 adb install -r Aether64-V1.apk
 ```
 
-Do not try to open an APK directly in Quest Browser.
+Uninstall the earlier diagnostic build first because it used a different debug signing key. Uninstalling clears the old app's imported data, so import the ROM again in V1. Do not try to open an APK directly in Quest Browser.
 
 ## Import game data
 
