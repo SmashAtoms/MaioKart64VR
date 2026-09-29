@@ -1,0 +1,15 @@
+/build*/
+/third_party/
+/android/.gradle/
+/android/.cxx/
+/android/app/.cxx/
+/android/app/build/
+/android/local.properties
+/artifacts/
+*.o2r
+*.z64
+*.n64
+*.v64
+*.jks
+*.keystore
+__pycache__/
