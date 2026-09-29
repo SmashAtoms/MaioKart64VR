@@ -11,6 +11,13 @@ public final class ArchiveValidator {
     private ArchiveValidator() {}
     public static void validate(File archive)throws IOException {
         if(archive.length()<22||archive.length()>MAX_ARCHIVE_BYTES)throw new IOException("Invalid archive size");
+        try(RandomAccessFile raw=new RandomAccessFile(archive,"r")) {
+            byte[] magic=new byte[4];
+            if(raw.read(magic)==4 && isRomMagic(magic)) {
+                if(archive.length()<4L*1024*1024)throw new IOException("ROM is too small to be a Mario 64 image");
+                return;
+            }
+        }
         boolean hasVersion=false,hasGameResources=false,hasMario64Rom=false;long total=0;int count=0;
         Set<String> names=new HashSet<>();
         try(ZipFile zip=new ZipFile(archive)) {
@@ -32,5 +39,10 @@ public final class ArchiveValidator {
             }
         }
         if(!((hasVersion&&hasGameResources)||hasMario64Rom))throw new IOException("ZIP must contain an MK64 O2R layout or a .z64, .n64, or .v64 Mario 64 ROM");
+    }
+    private static boolean isRomMagic(byte[] magic) {
+        return (magic[0]&255)==0x80&&(magic[1]&255)==0x37&&(magic[2]&255)==0x12&&(magic[3]&255)==0x40
+            ||(magic[0]&255)==0x40&&(magic[1]&255)==0x12&&(magic[2]&255)==0x37&&(magic[3]&255)==0x80
+            ||(magic[0]&255)==0x37&&(magic[1]&255)==0x80&&(magic[2]&255)==0x40&&(magic[3]&255)==0x12;
     }
 }

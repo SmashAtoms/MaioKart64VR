@@ -62,15 +62,17 @@ public final class AetherActivity extends NativeActivity {
                     out.getFD().sync();
                 }
                 ArchiveValidator.validate(temporary);
-                Files.move(temporary.toPath(),new File(dir,"mk64.o2r").toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
-                importResult="MK64 archive imported. The original document was not changed. A compatible game renderer is still required to launch it.";
+                Files.move(temporary.toPath(),new File(dir,"mk64.rom").toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
+                importResult="Mario 64 ROM imported. The original document was not changed. A compatible game renderer is still required to launch it.";
             }catch(Exception e){importResult="Import failed: "+e.getMessage()+". Existing data was kept.";}
             finally {if(temporary!=null&&temporary.exists())temporary.delete();importing=false;}
         });
     }
     public synchronized String pollImportResult() { String r=importResult;importResult="";return r; }
-    public String gameArchive() {return new File(getFilesDir(),"games/mk64/mk64.o2r").getAbsolutePath();}
-    public boolean hasGameData() {return new File(gameArchive()).isFile();}
+    public String gameArchive() {return new File(getFilesDir(),"games/mk64/mk64.rom").getAbsolutePath();}
+    public boolean hasGameData() {
+        return new File(gameArchive()).isFile()||new File(getFilesDir(),"games/mk64/mk64.o2r").isFile();
+    }
     public String dataDirectory() {return getFilesDir().getAbsolutePath();}
     public int loadCamera() {return getPreferences(MODE_PRIVATE).getInt("camera",0)==1?1:0;}
     public boolean loadDiagnostics() {return getPreferences(MODE_PRIVATE).getBoolean("diagnostics",false);}

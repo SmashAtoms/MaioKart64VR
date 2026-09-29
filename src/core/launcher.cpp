@@ -10,7 +10,7 @@ Panel Launcher::GetPanel()const {
     const auto camera=settings.camera==CameraMode::Driver?"Driver":"Chase";
     switch(page_){
     case Page::Home:p.title="AETHER64 XR";p.rows={"Games","Controls test","Camera test","Settings","Diagnostics"};break;
-    case Page::Games:p.title="YOUR GAMES";p.rows={gameData_?"Mario Kart 64  |  data imported":"Mario Kart 64  |  data needed","Import mk64.o2r","Back"};p.message=gameAvailable_?"Built-in port. Game data stays on this device.":unavailable_;break;
+    case Page::Games:p.title="YOUR GAMES";p.rows={gameData_?"Mario Kart 64  |  ROM imported":"Mario Kart 64  |  ROM needed","Import Mario 64 ROM","Back"};p.message=gameAvailable_?"Built-in port. Game data stays on this device.":unavailable_;break;
     case Page::Controls:p.title="CONTROLS TEST";p.rows={"Recenter","Back"};p.message=inputStatus;break;
     case Page::CameraTest:p.title="CAMERA TEST";p.rows={"Recenter","Back"};p.message="Look left, right, behind, and lean. White marks span one meter. Cubes surround you.";break;
     case Page::Settings:p.title="SETTINGS";p.rows={std::string("Default camera: ")+camera,std::string("Diagnostics: ")+(settings.diagnostics?"On":"Off"),"Recenter","Back"};p.message="Driver view is the default. Steering uses the left thumbstick.";break;
